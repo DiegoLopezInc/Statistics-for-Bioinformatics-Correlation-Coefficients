@@ -1,4 +1,4 @@
-# BINF-3121_Final_Project
+# BINF-3121 Final Project
 ---
 Ann Loraine and Diego Lopez <br/>
 2023-12-09 <br/>
