@@ -1,13 +1,9 @@
 # BINF-3121_Final_Project
 ---
-author: Ann Loraine and Diego Lopez <br/>
-date: "2023-12-09" <br/>
-output: html_document <br/>
-title: Let's see what the MUTE and SPEECHLESS bait, CATCHES <br/>
+Ann Loraine and Diego Lopez <br/>
+2023-12-09 <br/>
+Let's see what the MUTE and SPEECHLESS bait, CATCHES <br/>
 ---
-
-`{r setup, include=FALSE} knitr::opts_chunk$set(echo = TRUE)`
-
 ------------------------------------------------------------------------
 
 ## Introduction
