@@ -1,0 +1,199 @@
+---
+title: "MUTE and SPEECHLESS are the best bait, probably"
+author: "Ann Loraine"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+* * *
+
+## Introduction
+
+Three genes are known to be required to form stomata in the leaves of Arabidopsis thaliana plants:
+
+They are:
+
+* [AT5G53210](https://www.arabidopsis.org/servlets/TairObject?name=AT5G53210&type=locus) (gene symbol SPEECHLESS)
+* [AT3G06120](https://www.arabidopsis.org/servlets/TairObject?name=AT3G06120&type=locus) (gene symbol MUTE)
+* [AT3G24140](https://www.arabidopsis.org/servlets/TairObject?name=AT3G24140&type=locus) (gene symbol FAMA)
+
+Genes involved in the same processes typically exhibit similar expression patterns, which enables us to identify other genes involved the same process. 
+
+In this Markdown, we use a large expression data set to answer the question:
+
+* Are any of the above stomatal formation genes co-expressed with each other? 
+
+If any or all of the three genes are co-expressed, then we could then use the co-expressed genes find other genes that are co-expressed with one or all
+of them. These other genes may then themselves be involved in, and required for, formation of stomata during leaf development.
+
+To assess co-expression, we will use Pearson's correlation coefficient, which 
+ranges from -1 to 1 and provides a measure of the linear relationship between
+two variables. Values closer to 1 indicate positive correlation, a linear 
+relationship in which increases in one variable predict increases in the other
+variable. Values closer to -1 indicate negative correlation, indicating that
+as one variable increases, the other variable decreases. Correlation is useful only insofar as relationships between variables are linear, an important limitation.
+Therefore, in addition to computing Pearson's correlation coefficient, we will
+create and examine scatter plots showing expression of the three candidate bait
+genes in relationship to each other.
+
+### About the data
+
+The data were taken from the Gene Expression Omnibus and processed by Ann Loraine. Data files were downloaded from GEO and re-processed using algorithms standard in the field. 
+
+Data are available from the following publicly accessible URL:
+
+```{r}
+data_file_url = "https://uncc.instructure.com/courses/176579/files/18867927/download"
+```
+
+* * *
+
+## Results
+
+Download the data file to our local computer:
+
+```{r}
+fname="expression_data.txt.gz"
+if (!file.exists(fname)) {
+  download.file(data_file_url,fname,mode="wb")
+}
+```
+
+Note that on Windows systems, we need `mode` to be set to `wb` to ensure that the file will be available for reading in the next step.
+
+Read the data file into memory:
+
+```{r}
+df = read.table(fname, header = T, sep = "\t")
+```
+
+The data frame contains `r ncol(df)` columns and `r nrow(df)` rows. 
+
+Rows are named for Arabidopsis gene names. The column names correspond to individual samples from the Gene Expression Omnibus. Each row contains expression values for the gene in that row. 
+
+We can learn about each gene's behavior by looking at its gene expression profile over many experiments.
+
+For example, the gene "AT1G07350" encodes an RNA-binding protein that is up-regulated by heat and desiccation stress, and down-regulated by cold stress. So far as anyone knows, it has nothing to do with stomata.
+
+Let's create a histogram showing the distribution of expression values for AT1G07350 across all 500 samples:
+
+```{r fig.height=5, fig.width=5}
+makeHist = function(d,g,symbol) {
+  main=paste("Histogram of",g,"-",symbol)
+  xlab="Expression"
+  ylab="Frequency"
+  hist(as.numeric(d[g,]),main=main,ylab=ylab,xlab=xlab)
+}
+makeHist(df,"AT1G07350","SR45a")
+```
+
+The above plot shows that the population of expression values from 500 experiments is roughly normally distributed, with a mean of 
+`r round(mean(as.numeric(df["AT1G07350",])),2)` and maximum value of `r max(as.numeric(df["AT1G07350",]))`.
+
+Note that in order to use rows as vectors of numbers, we need to pass them to the `as.numeric` function. This is because data frames can have rows with different types of values, but, in this case, all the columns are numbers and all the rows are numbers, too. So we have to explicitly tell R that the rows are numeric values.
+
+Let's view the distribution of values for our three candidate bait genes:
+
+```{r fig.height=8, fig.width=8}
+par(mfrow=c(2,2))
+b1="AT5G53210" 
+b1_symbol = "SPEECHLESS"
+b2="AT3G06120" 
+b2_symbol = "MUTE"
+b3="AT3G24140" 
+b3_symbol = "FAMA"
+makeHist(df,b1,b1_symbol)
+makeHist(df,b2,b2_symbol)
+makeHist(df,b3,b3_symbol)
+makeHist(df,"AT1G07350","SR45a")
+par(mfrow=c(1,1))
+```
+
+The above histograms show that bait genes SPEECHLESS and MUTE exhibit skewed distributions, with a small number of very high expression values in some samples and most of the values having lower numbers, in the 4 to 6 range of the scale. 
+
+The FAMA gene has a broader distribution, with higher values in the 8 to 9 range of the scale. 
+
+These three patterns differ from how SR45a expression values are distributed, which has no documented role in stomatal development processes. 
+
+Of the three bait genes, SPEECHLESS and MUTE appear to have the most similar distributions, suggesting they are likely to be co-expressed with each other more so than with the other bait gene or with SR45a.
+
+We can not tell from the histograms how the genes' expression values are distributed relative to each other. For this, we need to look at scatter plots that show each gene in relation to the other.
+
+We will create four scatter plots comparing the expression of one gene on one axis to the expression of another gene on another axis. Each
+point in each plot will represent a pair of expression values, both taken from the same experiment column. As there are 500 samples, each plot will show
+500 points. The pattern of points will tell us the degree to which the genes are co-expressed. If the points appear to cluster around a line, this will show that the genes' expression patterns are linearly related, with larger values for one gene predicting larger values for the other gene, following a linear model.
+
+Create scatter plots comparing the genes' expression:
+
+```{r fig.height=8, fig.width=8}
+par(mfrow=c(2,2))
+makeScatterPlot = function(d,g1,g1_symbol,g2,g2_symbol) {
+  xlab=paste(g1,"-",g1_symbol)
+  ylab=paste(g2,"-",g2_symbol)
+  x = as.numeric(d[g1,])
+  y = as.numeric(d[g2,])
+  r = round(cor(x,y),2)
+  main=paste("Co-expression, r =",r)
+  plot(y~x,main=main,xlab=xlab,ylab=ylab,pch=".")
+  model=lm(y~x)
+  abline(model)
+  return(r)
+}
+r.b1.b2=makeScatterPlot(df,b1,b1_symbol,b2,b2_symbol)
+r.b1.b3=makeScatterPlot(df,b1,b1_symbol,b3,b3_symbol)
+r.b2.b3=makeScatterPlot(df,b2,b2_symbol,b3,b3_symbol)
+r.b1.sr45a=makeScatterPlot(df,b1,b1_symbol,"AT1G07350","SR45a")
+par(mfrow=c(1,1))
+```
+
+The figure above shows four scatter plots comparing the genes to each other. The title for each plot indicates the Pearson's correlation coefficient for each gene (labeled "r" in the plots) computed from the two genes paired expression values. 
+The figures also include the resulting line from creating a linear model relating the paired genes to each other. 
+
+The above plots show that only one pair of genes, MUTE and SPEECHLESS, exhibited
+a strong linear relationship with each other, and their higher correlation 
+coefficient was larger than for the other comparisons.
+
+Also as expected, AT1G07350 exhibits no correlation with the bait genes, which have unrelated functions.
+
+* * *
+
+## Discussion
+
+The goal of this Markdown is to assess the degree to which three candidate
+genes that are known to play a role in stomatal development - FAMA, MUTE, and SPEECHLESS, could serve as useful bait to identify other genes involved in the same process. To assess their usefulness as bait genes, we plotted the expression of
+the three genes, using data from 500 microarray experiments, provided at the
+URL listed above. 
+
+We showed that two of the three genes tested, MUTE and SPEECHLESS, exhibited higher correlation with each other than with the other candidate gene, FAMA. The 
+correlation coefficient observed between these two genes was higher than with the
+other pairs of genes tested. As a negative control, we computing correlation
+for a gene of unrelated function, encoding SR45a, a gene involved in RNA
+splicing. As expected, this negative control gene exhibit very low correlation
+with the three bait gene candidates.
+
+The correlation coefficient observed between MUTE and SPEECHLESS was 
+`r r.b1.b2`, higher than correlations observed between these two genes and 
+the other candidate bait gene, FAMA. 
+
+The next highest correlation coefficient was between FAMA and SPEECHLESS, `r r.b1.b3`. The difference between the two values is not large, and yet, the plot comparing FAMA and SPEECHLESS did not appear as linearly related. The relatively high correlation coefficient observed between FAMA and SPEECHLESS despite the relative non-linearity of their relationship highlights the limitations of using a single metric, Pearson's correlation, to assess coexpression and identify new candidate genes for a process. However, Pearson's correlation coefficient is
+easy and convenient to compute, which, in my opinion, outweighs its limitations.
+
+The next step in this study will be to compare expression of MUTE and SPEECHLESS
+to other genes in the genome, and identify those genes, if any, that are highly correlated with both MUTE and SPEECHLESS and therefore would be likely candidates
+for genes involved in stomatal formation.
+
+* * *
+
+## Conclusion
+
+* Based on these results, it seems like MUTE and SPEECHLESS, with correlation
+coefficient `r r.b1.b2`, may serve as the best "bait" for identifying other genes involved in stomatal development.
+* The correlation coefficient between MUTE and SPEECHLESS (`r r.b1.b2`) would
+likely be a good threshold to assess coexpression between these two bait
+genes and other genes in the genome. 
+* FAMA and SPEECHLESS had the next highest correlation of `r r.b1.b3`, but the relationship exposed in the scatter plot did not exhibit convincing linearity, suggesting that even though the correlation coefficient was larger, this pair of genes might not be a good pair to use to "fish out" other genes involved in stomatal development.
+

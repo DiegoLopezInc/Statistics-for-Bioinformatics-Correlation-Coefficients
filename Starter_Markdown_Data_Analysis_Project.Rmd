@@ -1,0 +1,151 @@
+---
+title: "Let's see what MUTE and SPEECHLESS bait, CATCHES"
+author: "Ann Loraine and Diego Lopez"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The Introduction states, explains, and justifies the question motivating the study. 
+
+State: 
+
+* The question you are trying to answer
+
+Explain:
+
+* Why the question is important.
+* How you intend to answer the question, e.g., the approach you're using. 
+* Provide links to external datasets you're using.
+
+Here is an example "Introduction" section:
+
+The central limit theorem in statistics is one of the most important 
+mathematical results in history! 
+
+One aspect of the central limit theorem is that if you sample a population over and over again, and compute the averages for each sample, then these averages will be normally distributed, with sample average fluctuating around the population average. 
+
+In this Markdown, we ask the question:
+
+* Using R's random number generation features, can we observe the normal distribution of sample averages? 
+
+## Results and Analysis
+
+This section analyzes data and states results from the analysis, focusing on
+answering the question(s) stated in the Introduction.
+
+What is a result? A "result" is fact that your code demonstrates is true. 
+That is all it is. Nothing more. The actual meaning you ascribe to the fact - its
+importance or significance - is an "interpretation" of the fact. 
+
+The Results section should contain sets of code chunks and their results. 
+
+You'll probably include many code chunks. Each chunk and the output it produces
+produces a result and also demonstrates that the result is correct.
+
+Following each chunk, state the fact that the code demonstrates.
+
+A figure is a visual representation of many results.
+After each figure, you should state one or more results
+demonstrated in the figure. 
+
+Also, provide a legend or other statement defining
+axes and units in the figure. 
+
+Here is an example of a part of a Results and Analysis section:
+
+* * *
+
+In the following code chunk, we create an example data set using a function in R that generates random samples from the exponential distribution, using the default value of 1 for the rate parameter.
+
+First, make the random number generation reproducible:
+
+```{r}
+set.seed(7)
+```
+
+Create random samples from the exponential distribution:
+
+```{r}
+sample_size = 50
+num_samples = 100
+exponential_random_samples = replicate(num_samples,
+                                       rexp(sample_size,rate=1))
+```
+
+The matrix `exponental_random_samples` has `r ncol(exponential_random_samples)` columns, where each column represents a random sampling`from the exponential distribution. 
+
+Each sample contains `r nrow(exponential_random_samples)` values. 
+
+To illustrate that the samples are from the exponential distribution, show a histogram of values from the first random sample:
+
+```{r fig.height=4, fig.width=4}
+main="Sample 1"
+hist(exponential_random_samples[,1],main=main,probability = T)
+```
+
+The preceding figures show that the random samples contain values selected at random from the exponential distribution. 
+
+Compute the average of each random sample, saving the result to a vector:
+
+```{r}
+averages = apply(exponential_random_samples,2,mean)
+```
+
+Display a histogram showing the distribution of sample averages from the random samples:
+
+```{r fig.height=4, fig.width=4}
+main="Sample average histogram"
+xlab = "Sample averages"
+hist(averages,main=main,xlab=xlab,probability = T)
+```
+
+The figure shows that the sample averages follow a normal distribution, centered on the rate parameter of 1.
+
+* * *
+
+## Discussion
+
+In this section, write about the facts presented in the Results section.
+
+* Restate the question from the Introduction. 
+* Explain how the facts presented in the Results section answer the question.
+* Describe possible limitations of the study.
+* Describe how answering the question creates new knowledge; put the Results into the larger context of what is already known.
+
+* * *
+
+Here is an example:
+
+In the Introduction section, we introduced the main question motivating this study, which was: Can we use R functions to confirm that sample averages are normally distributed, even when the sample values themselves are not? 
+
+To show this, we made a matrix of randomly selected values from the exponential distribution with rate parameter set to 1. 
+
+The columns of the matrix represented the samples, and the rows represented observations per sample. There were `r num_samples` samples
+of `r sample_size` values per sample.
+
+The first figure, a histogram, showed how the first random sample was from the exponential distribution, as it had a characteristic non-symmetrical shape. We did not examine all the samples, as there were too many.
+
+The second figure, also a histogram, showed that the averages of all these samples followed a normal distribution, as expected. These values centered on 1, the rate parameter.
+
+* * *
+
+## Conclusion
+
+This section states the answer to the question. 
+
+* Use bullet points to state the major findings from the study.
+* Provide the "too long didn't read" summary for people who don't want to bother with reading anything else.
+
+* * *
+
+Here is an example Conclusion section:
+
+* R can be used to show that sample averages are normally distributed.
+
+* * *
