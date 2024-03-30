@@ -1,9 +1,9 @@
 # BINF-3121_Final_Project
 ---
-author: Ann Loraine and Diego Lopez
-date: "`r Sys.Date()`"
-output: html_document
-title: Let's see what the MUTE and SPEECHLESS bait, CATCHES
+author: Ann Loraine and Diego Lopez <br/>
+date: "2023-12-09" <br/>
+output: html_document <br/>
+title: Let's see what the MUTE and SPEECHLESS bait, CATCHES <br/>
 ---
 
 `{r setup, include=FALSE} knitr::opts_chunk$set(echo = TRUE)`
