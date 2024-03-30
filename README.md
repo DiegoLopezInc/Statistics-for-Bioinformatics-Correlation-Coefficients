@@ -1,1 +1,1 @@
-# BNIF-3121_Final_Project
+# BINF-3121_Final_Project
